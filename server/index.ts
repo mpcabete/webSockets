@@ -6,8 +6,13 @@ const http = require('http');
 const { Server } = require("socket.io");
 const cors = require('cors')
 
+
+function randomDigit(){
+  return Math.floor(Math.random()*36).toString(36)
+}
+
 app.use(cors())
-app.use(express.static(__dirname+'../client/build'))
+app.use(express.static('../client/build'))
 
 
 
@@ -21,9 +26,34 @@ const io = new Server(server,{
 // app.get('/', (req:any, res:any) => {
 //   res.sendFile(__dirname + '/index.html');
 // });
+const rooms = {
 
+} as any
 io.on('connection', (socket:Socket) => {
   console.log('a user connected',socket.id);
+
+  socket.on('createRoom', (data:any)=>{
+    console.log('Creating room for:',socket.id,data)
+    const roomId = new Array(5).fill('').map(()=>randomDigit()).join('')
+    rooms[roomId] = {users:[]}
+    socket.join(roomId)
+    // socket.broadcast.emit('update',{user:socket.id,i:data.i})
+  })
+  socket.on('joinRoom',room=>{
+    console.log(socket.id, 'joining', room)
+    socket.join(room)
+  })
+  socket.on('leaveRoom',room=>{
+    console.log(socket.id, 'joining', room)
+    socket.leave(room)
+  })
+  socket.on('message',data=>{
+    const {room,message} = data
+    console.log(room,'message received', message)
+    socket.to(room).emit('message',message)
+
+  })
+
   socket.on('roll', (data:any)=>{
     console.log('roll',socket.id,data)
     socket.broadcast.emit('update',{user:socket.id,i:data.i})

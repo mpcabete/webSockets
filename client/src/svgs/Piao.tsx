@@ -1,4 +1,4 @@
-import {Tile} from '../App'
+import {Tile} from '../Game'
 export default function Piao(props:any){
     const {player,tileI, tiles } = props
   const size = 50
